@@ -6,9 +6,17 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
-import time
-import json
 import os
+import sys
+import time
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
+from models import WinningInfo, LottoStore, engine
+
+
+# 세션 생성
+session_factory = sessionmaker(bind=engine)
+Session = scoped_session(session_factory)
 
 # ChromeDriverManager를 사용하여 Chrome Driver 경로 가져오기
 driver_path = ChromeDriverManager().install()
@@ -23,9 +31,16 @@ time.sleep(2)  # 2초 대기
 drwNo_select = Select(driver.find_element(By.ID, 'drwNo'))
 drwNo_options = [option.get_attribute('value') for option in drwNo_select.options]
 
-# # 1057회차부터 크롤링 시작
-# drwNo_options = [drwNo for drwNo in drwNo_options if int(drwNo) <= 214]
 
+# 데이터베이스에서 가장 최근에 저장된 회차 번호 가져오기
+latest_drwNo = WinningInfo.get_latest_drwNo(Session)
+
+# 크롤링할 회차 범위 설정
+if latest_drwNo:
+    drwNo_options = [drwNo for drwNo in drwNo_options if int(drwNo) > latest_drwNo]
+else:
+    pass
+  
 
 # 테이블 크롤링 함수
 def crawl_table(driver, data, drwNo, rank, xpath, include_category=False):
@@ -153,19 +168,22 @@ for drwNo in drwNo_options:
     #2페이지 부터 끝 페이지까지 2등 배출점 크롤링
     crawl_second_tier_stores(driver, data, drwNo)
     
-    # 당첨점 정보가 있는 경우 파일 생성
 
-    if data["lotto_stores"]:
-        # data 폴더 경로 생성
-        data_folder = "lotto_winning_data"
-        os.makedirs(data_folder, exist_ok=True)
-        
-        # 각 회차별로 JSON 파일 저장
-        file_path = os.path.join(data_folder, f"lotto_stores_{drwNo}.json")
-        with open(file_path, "w", encoding="utf-8") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
+# 크롤링한 데이터를 데이터베이스에 저장
+    for store_data in data["lotto_stores"]:
+        winning_info = WinningInfo(
+            draw_no=store_data["drwNo"],
+            rank=store_data["rank"],
+            category=store_data.get("category"),
+            store_id=store_data["store_id"]
+        )
+
+        Session.add(winning_info)
+    Session.commit()
+
 
 
 
 # 드라이버 종료
 driver.quit()
+Session.remove()
