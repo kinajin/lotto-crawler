@@ -6,13 +6,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
-import os
-import sys
-import time
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
-from models import WinningInfo, LottoStore, engine
-
+from models import WinningInfo, engine
+import time
 
 # 세션 생성
 session_factory = sessionmaker(bind=engine)

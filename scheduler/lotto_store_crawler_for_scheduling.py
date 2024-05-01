@@ -3,7 +3,6 @@ import requests
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from models import LottoStore, engine
-import schedule
 
 # 세션 생성
 session_factory = sessionmaker(bind=engine)
@@ -90,10 +89,8 @@ def collect_all_lotto_stores():
     finally:
         Session.remove()
 
-# 매주 일요일 12시에 전체 판매점 데이터 수집 실행
-schedule.every().sunday.at("12:00").do(collect_all_lotto_stores)
 
-# 스케줄러 실행
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+# 데이터 수집 실행
+collect_all_lotto_stores()  # 전체 판매점 데이터 수집 실행  
+
+
