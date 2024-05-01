@@ -3,6 +3,7 @@ import requests
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from models import LottoStore, engine
+import schedule
 
 # 세션 생성
 session_factory = sessionmaker(bind=engine)
@@ -68,16 +69,31 @@ def fetch_and_save_data(sido, gugun='', page=1):
     except (requests.exceptions.RequestException, ValueError, KeyError) as e:
         print(f"Failed to fetch data for {sido} {gugun} page {page}: {str(e)}")
 
-# 기존 판매점 데이터 삭제
-LottoStore.delete_all(Session)
+# 전체 판매점 데이터 수집 함수
+def collect_all_lotto_stores():
+    try:
+        # 기존 판매점 데이터 삭제
+        LottoStore.delete_all(Session)
 
-# 데이터 수집 실행
-for sido in sido_list:
-    total_page = get_page_number(sido)
-    if total_page:
-        print(f"Total pages for {sido}: {total_page}")
-        for page in range(1, total_page + 1):
-            fetch_and_save_data(sido, page=page)
-            time.sleep(1)  # 요청 간 1초 지연
+        # 데이터 수집 실행
+        for sido in sido_list:
+            total_page = get_page_number(sido)
+            if total_page:
+                print(f"Total pages for {sido}: {total_page}")
+                for page in range(1, total_page + 1):
+                    fetch_and_save_data(sido, page=page)
+                    time.sleep(1)  # 요청 간 1초 지연
 
-Session.remove()
+        print("Lotto store data collection completed.")
+    except Exception as e:
+        print(f"An error occurred during data collection: {str(e)}")
+    finally:
+        Session.remove()
+
+# 매주 일요일 12시에 전체 판매점 데이터 수집 실행
+schedule.every().sunday.at("12:00").do(collect_all_lotto_stores)
+
+# 스케줄러 실행
+while True:
+    schedule.run_pending()
+    time.sleep(1)

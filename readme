@@ -1,112 +1,99 @@
-# LottoMap 프로젝트
+# 로또 판매점 및 당첨 정보 크롤링 시스템
 
-이 프로젝트는 로또 판매점 정보와 당첨 내역 데이터를 수집하여 데이터베이스에 저장하는 것을 목표로 합니다. 로또 데이터를 관리하고 분석하기 위한 포괄적인 솔루션을 제공합니다.
+이 프로젝트는 로또 판매점과 당첨 정보를 크롤링하여 데이터베이스에 저장하는 시스템입니다. 매주 최신 로또 당첨 정보를 수집하고, 로또 판매점 정보를 주기적으로 업데이트합니다.
 
 ## 프로젝트 구조
 
-프로젝트의 구조는 다음과 같습니다:
 
-- `lotto_store_data/`: 폐업한 판매점을 포함한 모든 로또 판매점 정보가 포함된 JSON 파일이 저장되는 디렉토리입니다.
-- `lotto_winning_data/`: 전체 로또 당첨 내역이 포함된 JSON 파일이 저장되는 디렉토리입니다.
-- `lottomap-env/`: 프로젝트의 가상 환경입니다.
-- `no_such_store/`: 폐업한 로또 판매점 정보가 포함된 JSON 파일이 저장되는 디렉토리입니다.
-- `addData.js`: 로또 판매점 정보와 당첨 내역을 데이터베이스 테이블에 추가하는 스크립트입니다.
-- `database.js`: 데이터베이스 연결을 설정하는 파일입니다.
-- `lotto_winning_store_crawler.py`: 로또 당첨 내역 데이터를 크롤링하는 스크립트입니다.
+first_crawling 폴더 : 처음 크롤링을 위한 파일들이 있는 폴더
 - `lotto_store_crawler.py`: 로또 판매점 정보를 크롤링하는 스크립트입니다.
-- `models.js`: 프로젝트의 데이터베이스 모델을 정의하는 파일입니다.
+- `lotto_winning_store_crawler.py`: 로또 당첨 정보를 크롤링하는 스크립트입니다.
 
-## 설치 및 사용 방법
 
-저장소를 클론합니다:
 
-```
-git clone https://github.com/your-username/lottomap.git
-```
 
-프로젝트 디렉토리로 이동합니다:
+- `lotto_crawling_scheduler.py`: 크롤링 작업을 스케줄링하는 스크립트입니다.
+- `lotto_store_crawler_for_scheduling.py`: 주기적인 로또 판매점 정보 업데이트를 위한 크롤링 스크립트입니다.
+- `lotto_winning_store_crawler_for_scheduling.py`: 주기적인 로또 당첨 정보 업데이트를 위한 크롤링 스크립트입니다.
+- `database.py`: 데이터베이스 연결 설정을 포함하는 파일입니다.
+- `models.py`: 데이터베이스 모델 정의를 포함하는 파일입니다.
 
-```
-cd lottomap
-```
+## 사용 기술
 
-가상 환경을 설정합니다:
+- Python
+- Selenium
+- Requests
+- SQLAlchemy
+- PostgreSQL
 
-```
-python -m venv lottomap-env
-source lottomap-env/bin/activate
-```
+## 설치 및 실행
 
-필요한 종속성을 설치합니다:
+1. 프로젝트를 클론하거나 다운로드합니다.
+2. 필요한 종속성을 설치합니다: `pip install -r requirements.txt`
+3. `database.py` 파일에서 데이터베이스 연결 설정을 구성합니다.
+4. 데이터베이스를 생성하고 테이블을 초기화합니다: `python models.py`
+5. 로또 판매점 정보를 수집하려면 `python lotto_store_crawler.py`를 실행합니다.
+6. 로또 당첨 정보를 수집하려면 `python lotto_winning_store_crawler.py`를 실행합니다.
+7. 크롤링 작업을 스케줄링하려면 `python lotto_crawling_scheduler.py`를 실행합니다.
 
-```
-pip install -r requirements.txt
-```
+## 크롤링 프로세스
 
-`database.js`에서 데이터베이스 연결 정보를 설정합니다.
+### 로또 판매점 정보 크롤링
 
-크롤러 스크립트를 실행하여 로또 판매점 정보와 당첨 내역 데이터를 수집합니다:
+1. `lotto_store_crawler.py` 스크립트를 실행합니다.
+2. 시/도 리스트를 순회하면서 각 시/도의 총 페이지 수를 가져옵니다.
+3. 각 페이지에 대해 로또 판매점 정보를 크롤링하고 데이터베이스에 저장합니다.
+4. 크롤링이 완료되면 세션을 종료합니다.
 
-```
-python lotto_store_crawler.py
-python lotto_winning_store_crawler.py
-```
+### 로또 당첨 정보 크롤링
 
-수집된 데이터를 데이터베이스에 추가하는 스크립트를 실행합니다:
+1. `lotto_winning_store_crawler.py` 스크립트를 실행합니다.
+2. 크롤링할 회차 범위를 설정합니다 (데이터베이스에 저장된 최신 회차 이후의 회차부터 크롤링).
+3. 각 회차별로 1등과 2등 배출점 정보를 크롤링합니다.
+4. 2등 배출점의 경우, 추가 페이지를 순회하면서 모든 2등 배출점 정보를 크롤링합니다.
+5. 크롤링한 데이터를 데이터베이스에 저장합니다.
+6. 크롤링이 완료되면 드라이버를 종료하고 세션을 종료합니다.
 
-```
-node addData.js
-```
+### 크롤링 스케줄링
+
+1. `lotto_crawling_scheduler.py` 스크립트를 실행합니다.
+2. 매주 일요일 12시에 `lotto_store_crawler.py`와 `lotto_winning_store_crawler.py`를 실행하도록 스케줄링합니다.
+3. 스케줄러는 지정된 시간에 크롤링 작업을 실행하고, 작업 완료 후 다음 스케줄까지 대기합니다.
 
 ## 데이터베이스 모델
 
-프로젝트는 두 개의 주요 데이터베이스 모델을 사용합니다:
+- `LottoStore`: 로또 판매점 정보를 저장하는 모델입니다.
+  - `id`: 판매점 고유 식별자 (Primary Key)
+  - `name`: 판매점 이름
+  - `address`: 판매점 주소
+  - `phone`: 판매점 전화번호
+  - `lat`: 판매점 위도
+  - `lon`: 판매점 경도
+  - `first_prize`: 1등 당첨 횟수
+  - `second_prize`: 2등 당첨 횟수
+  - `score`: 판매점 점수
+  - `winning_infos`: 당첨 정보와의 관계 (One-to-Many)
 
-### LottoStore
+- `WinningInfo`: 로또 당첨 정보를 저장하는 모델입니다.
+  - `id`: 당첨 정보 고유 식별자 (Primary Key)
+  - `store_id`: 판매점 식별자 (Foreign Key)
+  - `draw_no`: 회차 번호
+  - `rank`: 당첨 순위
+  - `category`: 당첨 카테고리
+  - `store`: 판매점과의 관계 (Many-to-One)
 
-로또 판매점을 나타내며 다음 속성을 가집니다:
+## 개선 사항
 
-- `id` (기본 키)
-- `name` (판매점 이름)
-- `address` (판매점 주소)
-- `phone` (판매점 전화번호)
-- `lat` (위도)
-- `lon` (경도)
-- `first_prize` (1등 당첨 횟수)
-- `second_prize` (2등 당첨 횟수)
-- `score` (전체 점수)
-
-### WinningInfo
-
-당첨 정보 항목을 나타내며 다음 속성을 가집니다:
-
-- `id` (기본 키)
-- `store_id` (LottoStore.id를 참조하는 외래 키)
-- `draw_no` (로또 회차 번호)
-- `rank` (당첨 등수)
-- `category` (당첨 카테고리)
-
-모델 간의 관계는 다음과 같이 정
-
-의됩니다:
-
-- 하나의 LottoStore는 여러 개의 WinningInfo 항목을 가질 수 있습니다 (`LottoStore.hasMany(WinningInfo)`)
-- 하나의 WinningInfo 항목은 하나의 LottoStore에 속합니다 (`WinningInfo.belongsTo(LottoStore)`)
-
-## 기여
-
-LottoMap 프로젝트에 기여하는 것을 환영합니다! 문제를 발견하거나 개선 사항이 있다면 GitHub 저장소에서 이슈를 열거나 풀 리퀘스트를 제출해주세요.
+- 예외 처리 강화: 네트워크 오류, 타임아웃 등 다양한 예외 상황을 고려하여 적절한 예외 처리와 로깅을 추가합니다.
+- 데이터 저장 최적화: 대량의 데이터를 한 번에 저장하는 대신 일정 개수씩 나누어 저장하여 메모리 사용량을 줄이고 데이터베이스 부하를 분산시킵니다.
+- 크롤링 속도 개선: 멀티스레딩 또는 멀티프로세싱을 적용하여 동시에 여러 페이지를 크롤링하고, 요청 간 적절한 지연 시간을 추가합니다.
+- 데이터 유효성 검사: 크롤링한 데이터의 유효성을 검사하고 필요한 경우 데이터 클렌징을 수행합니다.
+- 로깅 추가: 크롤링 결과에 대한 로깅을 추가하여 크롤링 과정을 모니터링하고 문제 발생 시 원인을 파악할 수 있도록 합니다.
 
 ## 라이선스
 
-이 프로젝트는 MIT 라이선스를 따릅니다.
+이 프로젝트는 [MIT 라이선스](LICENSE)를 따릅니다.
 
-## 크롤링 및 데이터 사용에 대한 주의 사항
+---
 
-이 프로젝트는 https://dhlottery.co.kr/ 사이트를 크롤링하여 로또 관련 데이터를 수집합니다. 크롤링을 수행하기 전에 해당 사이트의 이용 약관을 확인하였으며, 약관에 따라 크롤링이 허용된 경우에만 데이터를 수집하였습니다. 수집된 데이터는 비상업적인 목적으로만 사용되며, 해당 사이트의 저작권과 데이터 소유권을 존중합니다. 데이터의 사용에 대한 모든 책임은 사용자에게 있습니다.
-
-
-
-TODO: 
-- lottomap-env 를 gitignore 에 넣는만큼 추가 조치 취하기
-- lotto_winning_store_crawler 파일 이름 수정하기
+README 파일을 마크업 형식에 맞게 작성했습니다. 프로젝트의 구조, 사용 기술, 설치 및 실행 방법, 크롤링 프로세스, 데이터베이스 모델, 개선 사항 등을 상세히 설명했습니다. 프로젝트에 대한 전반적인 이해를 돕고, 다른 개발자들이 프로젝트를 쉽게 이해하고 사용할 수 있도록 가이드를 제공합니다.
