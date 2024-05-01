@@ -1,0 +1,112 @@
+# LottoMap 프로젝트
+
+이 프로젝트는 로또 판매점 정보와 당첨 내역 데이터를 수집하여 데이터베이스에 저장하는 것을 목표로 합니다. 로또 데이터를 관리하고 분석하기 위한 포괄적인 솔루션을 제공합니다.
+
+## 프로젝트 구조
+
+프로젝트의 구조는 다음과 같습니다:
+
+- `lotto_store_data/`: 폐업한 판매점을 포함한 모든 로또 판매점 정보가 포함된 JSON 파일이 저장되는 디렉토리입니다.
+- `lotto_winning_data/`: 전체 로또 당첨 내역이 포함된 JSON 파일이 저장되는 디렉토리입니다.
+- `lottomap-env/`: 프로젝트의 가상 환경입니다.
+- `no_such_store/`: 폐업한 로또 판매점 정보가 포함된 JSON 파일이 저장되는 디렉토리입니다.
+- `addData.js`: 로또 판매점 정보와 당첨 내역을 데이터베이스 테이블에 추가하는 스크립트입니다.
+- `database.js`: 데이터베이스 연결을 설정하는 파일입니다.
+- `lotto_winning_store_crawler.py`: 로또 당첨 내역 데이터를 크롤링하는 스크립트입니다.
+- `lotto_store_crawler.py`: 로또 판매점 정보를 크롤링하는 스크립트입니다.
+- `models.js`: 프로젝트의 데이터베이스 모델을 정의하는 파일입니다.
+
+## 설치 및 사용 방법
+
+저장소를 클론합니다:
+
+```
+git clone https://github.com/your-username/lottomap.git
+```
+
+프로젝트 디렉토리로 이동합니다:
+
+```
+cd lottomap
+```
+
+가상 환경을 설정합니다:
+
+```
+python -m venv lottomap-env
+source lottomap-env/bin/activate
+```
+
+필요한 종속성을 설치합니다:
+
+```
+pip install -r requirements.txt
+```
+
+`database.js`에서 데이터베이스 연결 정보를 설정합니다.
+
+크롤러 스크립트를 실행하여 로또 판매점 정보와 당첨 내역 데이터를 수집합니다:
+
+```
+python lotto_store_crawler.py
+python lotto_winning_store_crawler.py
+```
+
+수집된 데이터를 데이터베이스에 추가하는 스크립트를 실행합니다:
+
+```
+node addData.js
+```
+
+## 데이터베이스 모델
+
+프로젝트는 두 개의 주요 데이터베이스 모델을 사용합니다:
+
+### LottoStore
+
+로또 판매점을 나타내며 다음 속성을 가집니다:
+
+- `id` (기본 키)
+- `name` (판매점 이름)
+- `address` (판매점 주소)
+- `phone` (판매점 전화번호)
+- `lat` (위도)
+- `lon` (경도)
+- `first_prize` (1등 당첨 횟수)
+- `second_prize` (2등 당첨 횟수)
+- `score` (전체 점수)
+
+### WinningInfo
+
+당첨 정보 항목을 나타내며 다음 속성을 가집니다:
+
+- `id` (기본 키)
+- `store_id` (LottoStore.id를 참조하는 외래 키)
+- `draw_no` (로또 회차 번호)
+- `rank` (당첨 등수)
+- `category` (당첨 카테고리)
+
+모델 간의 관계는 다음과 같이 정
+
+의됩니다:
+
+- 하나의 LottoStore는 여러 개의 WinningInfo 항목을 가질 수 있습니다 (`LottoStore.hasMany(WinningInfo)`)
+- 하나의 WinningInfo 항목은 하나의 LottoStore에 속합니다 (`WinningInfo.belongsTo(LottoStore)`)
+
+## 기여
+
+LottoMap 프로젝트에 기여하는 것을 환영합니다! 문제를 발견하거나 개선 사항이 있다면 GitHub 저장소에서 이슈를 열거나 풀 리퀘스트를 제출해주세요.
+
+## 라이선스
+
+이 프로젝트는 MIT 라이선스를 따릅니다.
+
+## 크롤링 및 데이터 사용에 대한 주의 사항
+
+이 프로젝트는 https://dhlottery.co.kr/ 사이트를 크롤링하여 로또 관련 데이터를 수집합니다. 크롤링을 수행하기 전에 해당 사이트의 이용 약관을 확인하였으며, 약관에 따라 크롤링이 허용된 경우에만 데이터를 수집하였습니다. 수집된 데이터는 비상업적인 목적으로만 사용되며, 해당 사이트의 저작권과 데이터 소유권을 존중합니다. 데이터의 사용에 대한 모든 책임은 사용자에게 있습니다.
+
+
+
+TODO: 
+- lottomap-env 를 gitignore 에 넣는만큼 추가 조치 취하기
+- lotto_winning_store_crawler 파일 이름 수정하기
