@@ -8,7 +8,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
-from models import WinningInfo, engine
+from app.models import WinningInfo, engine
 import time
 
 # 세션 생성

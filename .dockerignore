@@ -1,0 +1,12 @@
+
+Dockerfile
+.dockerignore
+.git
+.gitignore
+README.md
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+lottomap-env

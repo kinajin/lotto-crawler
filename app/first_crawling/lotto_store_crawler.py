@@ -2,7 +2,7 @@ import time
 import requests
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
-from models import LottoStore, engine
+from app.models import LottoStore, engine
 
 # 세션 생성
 session_factory = sessionmaker(bind=engine)

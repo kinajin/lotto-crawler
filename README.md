@@ -7,14 +7,15 @@
 
 first_crawling 폴더 : 처음 크롤링을 위한 파일들이 있는 폴더
 - `lotto_store_crawler.py`: 로또 판매점 정보를 크롤링하는 스크립트입니다.
-- `lotto_winning_store_crawler.py`: 로또 당첨 정보를 크롤링하는 스크립트입니다.
+- `lotto_winning_crawler.py`: 로또 당첨 정보를 크롤링하는 스크립트입니다.
 
 
-
-
+scheduler 폴더 : 스케줄링을 위한 파일들이 있는 폴더
 - `lotto_crawling_scheduler.py`: 크롤링 작업을 스케줄링하는 스크립트입니다.
 - `lotto_store_crawler_for_scheduling.py`: 주기적인 로또 판매점 정보 업데이트를 위한 크롤링 스크립트입니다.
-- `lotto_winning_store_crawler_for_scheduling.py`: 주기적인 로또 당첨 정보 업데이트를 위한 크롤링 스크립트입니다.
+- `lotto_winning_crawler_for_scheduling.py`: 주기적인 로또 당첨 정보 업데이트를 위한 크롤링 스크립트입니다.
+
+
 - `database.py`: 데이터베이스 연결 설정을 포함하는 파일입니다.
 - `models.py`: 데이터베이스 모델 정의를 포함하는 파일입니다.
 
@@ -47,7 +48,7 @@ first_crawling 폴더 : 처음 크롤링을 위한 파일들이 있는 폴더
 
 ### 로또 당첨 정보 크롤링
 
-1. `lotto_winning_store_crawler.py` 스크립트를 실행합니다.
+1. `lotto_winning_crawler.py` 스크립트를 실행합니다.
 2. 크롤링할 회차 범위를 설정합니다 (데이터베이스에 저장된 최신 회차 이후의 회차부터 크롤링).
 3. 각 회차별로 1등과 2등 배출점 정보를 크롤링합니다.
 4. 2등 배출점의 경우, 추가 페이지를 순회하면서 모든 2등 배출점 정보를 크롤링합니다.

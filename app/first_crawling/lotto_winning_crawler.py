@@ -9,7 +9,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
-from models import WinningInfo, LottoStore, engine
+from app.models import WinningInfo, LottoStore, engine
 
 
 # 세션 생성
