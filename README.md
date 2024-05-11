@@ -4,20 +4,18 @@
 
 ## 프로젝트 구조
 
-
-first_crawling 폴더 : 처음 크롤링을 위한 파일들이 있는 폴더
-- `lotto_store_crawler.py`: 로또 판매점 정보를 크롤링하는 스크립트입니다.
-- `lotto_winning_crawler.py`: 로또 당첨 정보를 크롤링하는 스크립트입니다.
-
-
-scheduler 폴더 : 스케줄링을 위한 파일들이 있는 폴더
-- `lotto_crawling_scheduler.py`: 크롤링 작업을 스케줄링하는 스크립트입니다.
-- `lotto_store_crawler_for_scheduling.py`: 주기적인 로또 판매점 정보 업데이트를 위한 크롤링 스크립트입니다.
-- `lotto_winning_crawler_for_scheduling.py`: 주기적인 로또 당첨 정보 업데이트를 위한 크롤링 스크립트입니다.
-
-
-- `database.py`: 데이터베이스 연결 설정을 포함하는 파일입니다.
-- `models.py`: 데이터베이스 모델 정의를 포함하는 파일입니다.
+- `app` 폴더: 메인 애플리케이션 코드가 있는 폴더
+  - `first_crawling` 폴더: 처음 크롤링을 위한 파일들이 있는 폴더
+    - `lotto_store_crawler.py`: 로또 판매점 정보를 크롤링하는 스크립트입니다.
+    - `lotto_winning_crawler.py`: 로또 당첨 정보를 크롤링하는 스크립트입니다.
+  - `scheduler` 폴더: 스케줄링을 위한 파일들이 있는 폴더
+    - `lotto_crawling_scheduler.py`: 크롤링 작업을 스케줄링하는 스크립트입니다.
+    - `lotto_store_crawler_for_scheduling.py`: 주기적인 로또 판매점 정보 업데이트를 위한 크롤링 스크립트입니다.
+    - `lotto_winning_crawler_for_scheduling.py`: 주기적인 로또 당첨 정보 업데이트를 위한 크롤링 스크립트입니다.
+  - `database.py`: 데이터베이스 연결 설정을 포함하는 파일입니다.
+  - `models.py`: 데이터베이스 모델 정의를 포함하는 파일입니다.
+- `Dockerfile`: 애플리케이션을 Docker 컨테이너로 빌드하기 위한 Dockerfile입니다.
+- `requirements.txt`: 프로젝트에 필요한 Python 패키지 목록입니다.
 
 ## 사용 기술
 
@@ -26,40 +24,17 @@ scheduler 폴더 : 스케줄링을 위한 파일들이 있는 폴더
 - Requests
 - SQLAlchemy
 - PostgreSQL
+- Docker
 
 ## 설치 및 실행
 
 1. 프로젝트를 클론하거나 다운로드합니다.
 2. 필요한 종속성을 설치합니다: `pip install -r requirements.txt`
-3. `database.py` 파일에서 데이터베이스 연결 설정을 구성합니다.
-4. 데이터베이스를 생성하고 테이블을 초기화합니다: `python models.py`
-5. 로또 판매점 정보를 수집하려면 `python lotto_store_crawler.py`를 실행합니다.
-6. 로또 당첨 정보를 수집하려면 `python lotto_winning_store_crawler.py`를 실행합니다.
-7. 크롤링 작업을 스케줄링하려면 `python lotto_crawling_scheduler.py`를 실행합니다.
-
-## 크롤링 프로세스
-
-### 로또 판매점 정보 크롤링
-
-1. `lotto_store_crawler.py` 스크립트를 실행합니다.
-2. 시/도 리스트를 순회하면서 각 시/도의 총 페이지 수를 가져옵니다.
-3. 각 페이지에 대해 로또 판매점 정보를 크롤링하고 데이터베이스에 저장합니다.
-4. 크롤링이 완료되면 세션을 종료합니다.
-
-### 로또 당첨 정보 크롤링
-
-1. `lotto_winning_crawler.py` 스크립트를 실행합니다.
-2. 크롤링할 회차 범위를 설정합니다 (데이터베이스에 저장된 최신 회차 이후의 회차부터 크롤링).
-3. 각 회차별로 1등과 2등 배출점 정보를 크롤링합니다.
-4. 2등 배출점의 경우, 추가 페이지를 순회하면서 모든 2등 배출점 정보를 크롤링합니다.
-5. 크롤링한 데이터를 데이터베이스에 저장합니다.
-6. 크롤링이 완료되면 드라이버를 종료하고 세션을 종료합니다.
-
-### 크롤링 스케줄링
-
-1. `lotto_crawling_scheduler.py` 스크립트를 실행합니다.
-2. 매주 일요일 12시에 `lotto_store_crawler.py`와 `lotto_winning_store_crawler.py`를 실행하도록 스케줄링합니다.
-3. 스케줄러는 지정된 시간에 크롤링 작업을 실행하고, 작업 완료 후 다음 스케줄까지 대기합니다.
+3. `app/database.py` 파일에서 데이터베이스 연결 설정을 구성합니다.
+4. 데이터베이스를 생성하고 테이블을 초기화합니다: `python app/models.py`
+5. 로또 판매점 정보를 수집하려면 `python app/first_crawling/lotto_store_crawler.py`를 실행합니다.
+6. 로또 당첨 정보를 수집하려면 `python app/first_crawling/lotto_winning_crawler.py`를 실행합니다.
+7. 크롤링 작업을 스케줄링하려면 `python app/scheduler/lotto_crawling_scheduler.py`를 실행합니다.
 
 ## 데이터베이스 모델
 
@@ -74,7 +49,6 @@ scheduler 폴더 : 스케줄링을 위한 파일들이 있는 폴더
   - `second_prize`: 2등 당첨 횟수
   - `score`: 판매점 점수
   - `winning_infos`: 당첨 정보와의 관계 (One-to-Many)
-
 - `WinningInfo`: 로또 당첨 정보를 저장하는 모델입니다.
   - `id`: 당첨 정보 고유 식별자 (Primary Key)
   - `store_id`: 판매점 식별자 (Foreign Key)
@@ -83,18 +57,15 @@ scheduler 폴더 : 스케줄링을 위한 파일들이 있는 폴더
   - `category`: 당첨 카테고리
   - `store`: 판매점과의 관계 (Many-to-One)
 
-## 개선 사항
+## 작성자 정보
 
-- 예외 처리 강화: 네트워크 오류, 타임아웃 등 다양한 예외 상황을 고려하여 적절한 예외 처리와 로깅을 추가합니다.
-- 데이터 저장 최적화: 대량의 데이터를 한 번에 저장하는 대신 일정 개수씩 나누어 저장하여 메모리 사용량을 줄이고 데이터베이스 부하를 분산시킵니다.
-- 크롤링 속도 개선: 멀티스레딩 또는 멀티프로세싱을 적용하여 동시에 여러 페이지를 크롤링하고, 요청 간 적절한 지연 시간을 추가합니다.
-- 데이터 유효성 검사: 크롤링한 데이터의 유효성을 검사하고 필요한 경우 데이터 클렌징을 수행합니다.
-- 로깅 추가: 크롤링 결과에 대한 로깅을 추가하여 크롤링 과정을 모니터링하고 문제 발생 시 원인을 파악할 수 있도록 합니다.
+이메일: kinajin22@gmail.com
+GitHub: https://github.com/kinajin/
 
-## 라이선스
+## 라이센스
 
-이 프로젝트는 [MIT 라이선스](LICENSE)를 따릅니다.
+이 프로젝트는 [MIT 라이센스](LICENSE)를 따릅니다.
 
 ---
 
-README 파일을 마크업 형식에 맞게 작성했습니다. 프로젝트의 구조, 사용 기술, 설치 및 실행 방법, 크롤링 프로세스, 데이터베이스 모델, 개선 사항 등을 상세히 설명했습니다. 프로젝트에 대한 전반적인 이해를 돕고, 다른 개발자들이 프로젝트를 쉽게 이해하고 사용할 수 있도록 가이드를 제공합니다.
+README 파일을 마크업 형식에 맞게 작성했습니다. 프로젝트의 구조, 사용 기술, 설치 및 실행 방법, 크롤링 프로세스, 데이터베이스 모델, 개선 사항 등을 상세히 설명했습니다. 도커 컨테이너화에 대한 정보도 추가하여 애플리케이션의 배포와 실행을 용이하게 했습니다.

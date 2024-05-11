@@ -6,10 +6,10 @@ from ..models import LottoStore, engine, WinningInfo
 from sqlalchemy.sql import func
 import json
 
-# 데이터 저장 함수
-def save_to_file(data, filename):
-    with open(filename, 'w', encoding='utf-8') as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
+# # 데이터 저장 함수
+# def save_to_file(data, filename):
+#     with open(filename, 'w', encoding='utf-8') as file:
+#         json.dump(data, file, ensure_ascii=False, indent=4)
 
 
 # 케이스:
@@ -208,8 +208,6 @@ def collect_all_lotto_stores():
         # 폐점한 판매점 ID 가져오기
         inactive_store_ids = get_inactive_store_ids(existing_store_ids, all_store_ids)
 
-        # 폐점한 판매점 ID 저장 테스트용
-        save_to_file(list(inactive_store_ids), 'inactive_store_ids.json')
 
         # 폐점한 판매점의 당첨 정보 삭제
         delete_winning_info(inactive_store_ids)
