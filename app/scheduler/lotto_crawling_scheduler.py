@@ -1,30 +1,51 @@
 import schedule
 import time
-import subprocess
+import logging
+import sys
+import os
 
-def run_lotto_store_crawler():
-    try:
-        print("Running lotto_store_crawler.py...")
-        subprocess.run(["python", "lotto_store_crawler.py"], check=True)
-        print("lotto_store_crawler.py finished successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error running lotto_store_crawler.py: {str(e)}")
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from app.scheduler.lotto_store_crawler_for_scheduling import collect_all_lotto_stores
+from app.scheduler.lotto_winning_crawler_for_scheduling import collect_all_winning_data
 
-def run_lotto_winning_store_crawler():
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def collect_lotto_stores():
     try:
-        print("Running lotto_winning_store_crawler.py...")
-        subprocess.run(["python", "lotto_winning_store_crawler.py"], check=True)
-        print("lotto_winning_store_crawler.py finished successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error running lotto_winning_store_crawler.py: {str(e)}")
+        print("Running lotto_store_crawler...")
+        collect_all_lotto_stores()
+        print("lotto_store_crawler finished successfully.")
+    except Exception as e:
+        print(f"Error running lotto_store_crawler: {str(e)}")
+
+def collect_winning_data():
+    try:
+        print("Running lotto_winning_store_crawler...")
+        collect_all_winning_data()
+        print("lotto_winning_store_crawler finished successfully.")
+    except Exception as e:
+        print(f"Error running lotto_winning_store_crawler: {str(e)}")
 
 def run_crawlers():
-    run_lotto_store_crawler()
-    run_lotto_winning_store_crawler()
+    collect_lotto_stores()
+    collect_winning_data()
 
-# 매주 일요일 12:00에 크롤러 실행
-schedule.every().sunday.at("12:00").do(run_crawlers)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+
+
+run_crawlers()  # 스케줄러 시작 시 크롤러 실행
+
+
+
+
+print("Scheduler started.")  # 스케줄러 시작 메시지 출력
+
+# # 매주 목요일 11:25에 크롤러 실행 예약
+# schedule.every().saturday.at("01:09").do(run_crawlers)
+
+# while True:
+#     schedule.run_pending()
+#     time.sleep(1)
+#     current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+#     print(f"Scheduler is running at {current_time}, next job at {schedule.next_run()}")  # 프린트 문으로 변경

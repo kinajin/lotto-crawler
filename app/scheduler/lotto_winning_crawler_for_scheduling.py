@@ -20,6 +20,7 @@ driver_path = ChromeDriverManager().install()
 service = Service(driver_path)
 driver = webdriver.Chrome(service=service)
 
+
 # 크롤링할 페이지 접속
 driver.get('https://dhlottery.co.kr/store.do?method=topStore&pageGubun=L645')
 time.sleep(2)  # 2초 대기
@@ -59,7 +60,7 @@ def crawl_table(driver, data, drwNo, rank, xpath, include_category=False):
                 print(f"{rank}등 배출점 조회 결과가 없습니다.")
                 continue
             
-            # 
+            # 행의 각 열에서 텍스트 추출
             name = columns[1].text
             category = columns[2].text if include_category else None
             address = columns[3].text if include_category else columns[2].text
@@ -74,6 +75,7 @@ def crawl_table(driver, data, drwNo, rank, xpath, include_category=False):
                 "address": address,
                 "store_id": store_id
             }
+
             if include_category:
                 store_data["category"] = category
             
@@ -140,47 +142,49 @@ def crawl_second_tier_stores(driver, data, drwNo):
 
 
 
-# 각 회차별로 크롤링 수행
-for drwNo in drwNo_options:
+def collect_all_winning_data():
+    # 각 회차별로 크롤링 수행
+    for drwNo in drwNo_options:
 
-    print("=====================================================================")
-    print(f"[회차 {drwNo} 크롤링 중...]")
+        print("=====================================================================")
+        print(f"[회차 {drwNo} 크롤링 중...]")
 
-    data = {"lotto_stores": []}
+        data = {"lotto_stores": []}
 
-    # 회차 선택
-    drwNo_select = Select(driver.find_element(By.ID, 'drwNo'))
-    drwNo_select.select_by_value(drwNo)
+        # 회차 선택
+        drwNo_select = Select(driver.find_element(By.ID, 'drwNo'))
+        drwNo_select.select_by_value(drwNo)
 
-    # 조회 버튼 클릭
-    driver.find_element(By.ID, 'searchBtn').click()
+        # 조회 버튼 클릭
+        driver.find_element(By.ID, 'searchBtn').click()
 
-    # 페이지 로딩 대기
-    time.sleep(1)
+        # 페이지 로딩 대기
+        time.sleep(1)
 
-    #첫 페이지 크롤링 1등 배출점 크롤링, 2등 배출점 크롤링
-    crawl_table(driver, data, drwNo, "1", "//div[@class='group_content'][1]//table", True)
-    crawl_table(driver, data, drwNo, "2", "//div[@class='group_content'][2]//table")
+        #첫 페이지 크롤링 1등 배출점 크롤링, 2등 배출점 크롤링
+        crawl_table(driver, data, drwNo, "1", "//div[@class='group_content'][1]//table", True)
+        crawl_table(driver, data, drwNo, "2", "//div[@class='group_content'][2]//table")
 
-    #2페이지 부터 끝 페이지까지 2등 배출점 크롤링
-    crawl_second_tier_stores(driver, data, drwNo)
-    
+        #2페이지 부터 끝 페이지까지 2등 배출점 크롤링
+        crawl_second_tier_stores(driver, data, drwNo)
+        
 
-# 크롤링한 데이터를 데이터베이스에 저장
-    for store_data in data["lotto_stores"]:
-        winning_info = WinningInfo(
-            draw_no=store_data["drwNo"],
-            rank=store_data["rank"],
-            category=store_data.get("category"),
-            store_id=store_data["store_id"]
-        )
+    # 크롤링한 데이터를 데이터베이스에 저장
+        for store_data in data["lotto_stores"]:
+            winning_info = WinningInfo(
+                draw_no=store_data["drwNo"],
+                rank=store_data["rank"],
+                category=store_data.get("category"),
+                store_id=store_data["store_id"]
+            )
 
-        Session.add(winning_info)
-    Session.commit()
+            Session.add(winning_info)
+        Session.commit()
 
+    # 드라이버 종료
+    driver.quit()
+    Session.remove()
 
-
-
-# 드라이버 종료
-driver.quit()
-Session.remove()
+# 스케줄러용 함수
+if __name__ == '__main__':
+    collect_all_winning_data()
