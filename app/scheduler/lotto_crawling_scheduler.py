@@ -11,6 +11,7 @@ from app.scheduler.lotto_winning_crawler_for_scheduling import collect_all_winni
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# 로또 판매점 데이터 수집
 def collect_lotto_stores():
     try:
         print("Running lotto_store_crawler...")
@@ -19,6 +20,7 @@ def collect_lotto_stores():
     except Exception as e:
         print(f"Error running lotto_store_crawler: {str(e)}")
 
+# 로또 당첨 데이터 수집
 def collect_winning_data():
     try:
         print("Running lotto_winning_store_crawler...")

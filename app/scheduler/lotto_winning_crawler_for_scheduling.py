@@ -8,7 +8,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
-from app.models import WinningInfo, engine
+from app.models import WinningInfo, engine, LottoStore
 import time
 
 # 세션 생성
@@ -170,16 +170,25 @@ def collect_all_winning_data():
         
 
     # 크롤링한 데이터를 데이터베이스에 저장
-        for store_data in data["lotto_stores"]:
+    for store_data in data["lotto_stores"]:
+        store_id = store_data["store_id"]
+        
+        # LottoStores 테이블에서 store_id 확인
+        lotto_store = Session.query(LottoStore).filter_by(id=store_id).first()
+        
+        if lotto_store:
             winning_info = WinningInfo(
                 draw_no=store_data["drwNo"],
                 rank=store_data["rank"],
                 category=store_data.get("category"),
-                store_id=store_data["store_id"]
+                store_id=store_id
             )
-
+            
             Session.add(winning_info)
-        Session.commit()
+        else:
+            print(f"Skipping store_id {store_id} as it doesn't exist in LottoStores table.")
+
+    Session.commit()
 
     # 드라이버 종료
     driver.quit()
