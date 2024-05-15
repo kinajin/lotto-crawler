@@ -15,9 +15,9 @@ class LottoStore(Base):
     phone = Column(String(30))
     lat = Column(DECIMAL(10, 8))
     lon = Column(DECIMAL(11, 8))
-    first_prize = Column(Integer, default=0)
-    second_prize = Column(Integer, default=0)
-    score = Column(Integer, default=0)
+    # first_prize = Column(Integer, default=0)
+    # second_prize = Column(Integer, default=0)
+    # score = Column(Integer, default=0)
     winning_infos = relationship("WinningInfo", back_populates="store")
 
 class WinningInfo(Base):
