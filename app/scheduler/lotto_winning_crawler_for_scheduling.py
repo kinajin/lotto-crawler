@@ -1,24 +1,49 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from sqlalchemy.orm import scoped_session, sessionmaker
 from webdriver_manager.chrome import ChromeDriverManager
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
-from app.models import WinningInfo, engine, LottoStore
+import logging
 import time
+from app.models import WinningInfo, engine, LottoStore
+
+# 로그 설정
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s: %(message)s',
+    handlers=[
+        logging.FileHandler("winning_data_crawler.log"),  # 파일에 로그를 기록
+        logging.StreamHandler()  # 콘솔에 로그를 출력
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # 세션 생성
 session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
 
-# ChromeDriverManager를 사용하여 Chrome Driver 경로 가져오기
-driver_path = ChromeDriverManager().install()
-service = Service(driver_path)
-driver = webdriver.Chrome(service=service)
+# Chrome Driver 설정 함수
+def initialize_driver():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Headless 모드
+    chrome_options.add_argument("--no-sandbox")  # 리눅스에서 실행 시 필요
+    chrome_options.add_argument("--disable-dev-shm-usage")  # 리눅스에서 실행 시 필요
+    chrome_options.add_argument("--disable-gpu")  # GPU 비활성화
+    chrome_options.add_argument("--window-size=1920x1080")  # 화면 사이즈 설정
+    
+    driver_path = "/usr/local/bin/chromedriver"  # 크롬 드라이버 경로 직접 지정
+    service = Service(driver_path)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    
+    return driver
+
+# 드라이버 초기화
+driver = initialize_driver()
 
 # 크롤링할 페이지 접속
 driver.get('https://dhlottery.co.kr/store.do?method=topStore&pageGubun=L645')
@@ -47,7 +72,7 @@ def crawl_table(driver, data, drwNo, rank, xpath, include_category=False):
         for row in rows:
             columns = row.find_elements(By.XPATH, ".//td")
             if "조회 결과가 없습니다." in row.text:
-                print(f"{rank}등 배출점 조회 결과가 없습니다.")
+                logger.info(f"{rank}등 배출점 조회 결과가 없습니다.")
                 continue
             name = columns[1].text
             category = columns[2].text if include_category else None
@@ -65,7 +90,7 @@ def crawl_table(driver, data, drwNo, rank, xpath, include_category=False):
                 store_data["category"] = category
             data["lotto_stores"].append(store_data)
     except (NoSuchElementException, TimeoutException):
-        print(f"{rank}등 배출점 테이블이 존재하지 않거나 로딩 시간이 초과되었습니다.")
+        logger.error(f"{rank}등 배출점 테이블이 존재하지 않거나 로딩 시간이 초과되었습니다.")
 
 # 마지막 페이지 번호 추정 함수
 def estimate_last_page_number(driver):
@@ -88,7 +113,7 @@ def estimate_last_page_number(driver):
 def crawl_second_tier_stores(driver, data, drwNo):
     page_number = 2
     max_page_number = estimate_last_page_number(driver)
-    print(max_page_number)
+    logger.info(f"Total pages to crawl for 2등: {max_page_number}")
     while page_number <= max_page_number:
         try:
             page_link = driver.find_element(By.XPATH, f"//div[@class='paginate_common']//a[contains(@onclick, 'selfSubmit({page_number})')]")
@@ -97,14 +122,14 @@ def crawl_second_tier_stores(driver, data, drwNo):
             crawl_table(driver, data, drwNo, "2", "//div[@class='group_content'][2]//table")
             page_number += 1
         except (NoSuchElementException, TimeoutException):
-            print(f"페이지 {page_number}가 존재하지 않거나 로딩 시간이 초과되었습니다.")
+            logger.error(f"페이지 {page_number}가 존재하지 않거나 로딩 시간이 초과되었습니다.")
             break
 
 def collect_all_winning_data():
     data = {"lotto_stores": []}  # 초기화 위치 변경
     for drwNo in drwNo_options:
-        print("=====================================================================")
-        print(f"[회차 {drwNo} 크롤링 중...]")
+        logger.info("=====================================================================")
+        logger.info(f"[회차 {drwNo} 크롤링 중...]")
         data["lotto_stores"] = []  # 각 회차마다 초기화
         drwNo_select = Select(driver.find_element(By.ID, 'drwNo'))
         drwNo_select.select_by_value(drwNo)
@@ -125,7 +150,7 @@ def collect_all_winning_data():
                 )
                 Session.add(winning_info)
             else:
-                print(f"Skipping store_id {store_id} as it doesn't exist in LottoStores table.")
+                logger.info(f"Skipping store_id {store_id} as it doesn't exist in LottoStores table.")
         Session.commit()
     driver.quit()
     Session.remove()

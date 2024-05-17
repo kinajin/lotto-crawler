@@ -5,3 +5,4 @@ webdriver_manager
 schedule==1.1.0
 psycopg2==2.9.3
 alembic
+pytz==2021.3  # pytz 모듈 추가

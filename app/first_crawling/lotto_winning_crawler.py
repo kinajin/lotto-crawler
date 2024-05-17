@@ -1,6 +1,3 @@
-
-
-
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -26,12 +23,25 @@ session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
 
 
-# 드라이버 초기화 함수
+
+# Chrome Driver 설정 함수
 def initialize_driver():
-    driver_path = ChromeDriverManager().install()
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Headless 모드
+    chrome_options.add_argument("--no-sandbox") # 리눅스에서 실행 시 필요
+    chrome_options.add_argument("--disable-dev-shm-usage") # 리눅스에서 실행 시 필요
+    chrome_options.add_argument("--disable-gpu") # 
+    chrome_options.add_argument("--window-size=1920x1080") # 화면 사이즈 설정
+    
+    driver_path = "/usr/local/bin/chromedriver"  # 크롬 드라이버 경로 직접 지정
     service = Service(driver_path)
-    driver = webdriver.Chrome(service=service)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    
     return driver
+
+
+# 드라이버 초기화
+driver = initialize_driver()
 
 
 # 크롤링 페이지 접속 함수
