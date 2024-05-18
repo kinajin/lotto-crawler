@@ -126,34 +126,40 @@ def crawl_second_tier_stores(driver, data, drwNo):
             break
 
 def collect_all_winning_data():
+    driver = initialize_driver()  # 드라이버 초기화 위치 이동
     data = {"lotto_stores": []}  # 초기화 위치 변경
-    for drwNo in drwNo_options:
-        logger.info("=====================================================================")
-        logger.info(f"[회차 {drwNo} 크롤링 중...]")
-        data["lotto_stores"] = []  # 각 회차마다 초기화
-        drwNo_select = Select(driver.find_element(By.ID, 'drwNo'))
-        drwNo_select.select_by_value(drwNo)
-        driver.find_element(By.ID, 'searchBtn').click()
-        time.sleep(1)
-        crawl_table(driver, data, drwNo, "1", "//div[@class='group_content'][1]//table", True)
-        crawl_table(driver, data, drwNo, "2", "//div[@class='group_content'][2]//table")
-        crawl_second_tier_stores(driver, data, drwNo)
-        for store_data in data["lotto_stores"]:
-            store_id = store_data["store_id"]
-            lotto_store = Session.query(LottoStore).filter_by(id=store_id).first()
-            if lotto_store:
-                winning_info = WinningInfo(
-                    draw_no=store_data["drwNo"],
-                    rank=store_data["rank"],
-                    category=store_data.get("category"),
-                    store_id=store_id
-                )
-                Session.add(winning_info)
-            else:
-                logger.info(f"Skipping store_id {store_id} as it doesn't exist in LottoStores table.")
-        Session.commit()
-    driver.quit()
-    Session.remove()
+    try:
+        for drwNo in drwNo_options:
+            logger.info("=====================================================================")
+            logger.info(f"[회차 {drwNo} 크롤링 중...]")
+            data["lotto_stores"] = []  # 각 회차마다 초기화
+            drwNo_select = Select(driver.find_element(By.ID, 'drwNo'))
+            drwNo_select.select_by_value(drwNo)
+            driver.find_element(By.ID, 'searchBtn').click()
+            time.sleep(1)
+            crawl_table(driver, data, drwNo, "1", "//div[@class='group_content'][1]//table", True)
+            crawl_table(driver, data, drwNo, "2", "//div[@class='group_content'][2]//table")
+            crawl_second_tier_stores(driver, data, drwNo)
+            for store_data in data["lotto_stores"]:
+                store_id = store_data["store_id"]
+                lotto_store = Session.query(LottoStore).filter_by(id=store_id).first()
+                if lotto_store:
+                    winning_info = WinningInfo(
+                        draw_no=store_data["drwNo"],
+                        rank=store_data["rank"],
+                        category=store_data.get("category"),
+                        store_id=store_id
+                    )
+                    Session.add(winning_info)
+                else:
+                    logger.info(f"Skipping store_id {store_id} as it doesn't exist in LottoStores table.")
+            Session.commit()
+    except Exception as e:
+        logger.error(f"An error occurred during data collection: {str(e)}")
+    finally:
+        driver.quit()  # 드라이버 종료
+        Session.remove()
+
 
 if __name__ == '__main__':
     collect_all_winning_data()

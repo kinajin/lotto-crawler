@@ -49,7 +49,7 @@ def run_crawlers():
     logger.info("Crawler finished.")
 
 # 5분마다 크롤러 실행 예약
-schedule.every(5).minutes.do(run_crawlers)
+schedule.every(60).minutes.do(run_crawlers)
 
 last_log_time = datetime.now()
 

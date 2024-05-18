@@ -103,6 +103,8 @@ def delete_inactive_stores(inactive_store_ids):
 
 # HTML 엔티티를 처리하는 함수
 def decode_html_entities(text):
+    if text is None:
+        return ''
     text = text.replace("&#35;", "#")
     return html.unescape(text)
 
@@ -115,8 +117,8 @@ def update_store_info(store_data):
         updated_fields = []
         
         # Unescape HTML entities in store_data
-        firm_name = decode_html_entities(store_data['FIRMNM'])
-        address = decode_html_entities(store_data['BPLCDORODTLADRES'])
+        firm_name = decode_html_entities(store_data.get('FIRMNM'))
+        address = decode_html_entities(store_data.get('BPLCDORODTLADRES'))
         
         if lotto_store.name != firm_name:
             logger.info(f"Store name changed from {lotto_store.name} to {firm_name}")
