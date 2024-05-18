@@ -24,7 +24,7 @@ class LottoStore(Base):
 class WinningInfo(Base):
     # __tablename__ = "WinningInfos" # 내 로컬 테이블 이름
     __tablename__ = "winning_info" # aws 내 준병님 테이블 이름
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     # store_id = Column(Integer, ForeignKey("LottoStores.id"), nullable=False) # 내 로컬 테이블 이름
     store_id = Column(Integer, ForeignKey("lotto_stores.id"), nullable=False)  # aws 내 준병님 테이블 이름
     draw_no = Column(Integer, nullable=False)

@@ -13,7 +13,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s: %(message)s',
     handlers=[
-        logging.FileHandler("lotto_store_crawler.log"),  # 파일에 로그를 기록
+        logging.FileHandler("lotto_store_crawler.log",encoding='utf-8'),  # 파일에 로그를 기록
         logging.StreamHandler()  # 콘솔에 로그를 출력
     ]
 )
@@ -199,7 +199,7 @@ def collect_all_lotto_stores():
                 for page in range(1, total_page + 1):
                     # 데이터 수집
                     fetch_data(sido, page=page, all_store_data=all_store_data)  
-            logger.info(f"📊 {sido}에서 수집된 총 로또 판매점 수: {len(all_store_data)}")
+            logger.info(f"📊 {sido}까지 수집된 총 로또 판매점 수: {len(all_store_data)}")
 
         # 전체 판매점 ID 가져오기
         all_store_ids = get_all_store_ids(all_store_data)

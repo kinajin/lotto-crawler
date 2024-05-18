@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s: %(message)s',
     handlers=[
-        logging.FileHandler("crawler.log"),  # 파일에 로그를 기록
+        logging.FileHandler("crawler.log", encoding='utf-8'),  # 파일에 로그를 기록
         logging.StreamHandler()              # 콘솔에 로그를 출력
     ]
 )
@@ -31,6 +31,7 @@ def collect_lotto_stores():
         logger.info("🛠️ lotto_store_crawler 실행 중....")
         collect_all_lotto_stores()
         logger.info("✅ lotto_store_crawler 크롤링 완료.")
+        logger.info("----------------------------------------")
     except Exception as e:
         logger.error(f"❌ Error running lotto_store_crawler: {str(e)}")
 
@@ -53,7 +54,7 @@ def run_crawlers():
 
 
 # 특정 시간마다 크롤러 실행 예약
-schedule.every(3).minutes.do(run_crawlers)
+schedule.every(1).minutes.do(run_crawlers)
 
 
 # 로그 설정
@@ -67,5 +68,5 @@ while True:
     current_time_str = now.astimezone(KST).strftime("%Y-%m-%d %H:%M:%S")
     next_run = schedule.next_run().astimezone(KST).strftime("%Y-%m-%d %H:%M:%S") if schedule.next_run() else "No scheduled jobs"
     if now - last_log_time >= LOG_INTERVAL:
-        logger.info(f"[ 현재시간: {current_time_str}, 다음 스케쥴러 작동 시간 : {next_run}]")
+        logger.info(f"[ 🕦 현재시간: {current_time_str},  ⌛ 다음 스케쥴러 작동 시간: {next_run}]")
         last_log_time = now
