@@ -72,7 +72,7 @@ def crawl_table(driver, data, drwNo, rank, xpath, include_category=False):
         for row in rows:
             columns = row.find_elements(By.XPATH, ".//td")
             if "조회 결과가 없습니다." in row.text:
-                logger.info(f"{rank}등 배출점 조회 결과가 없습니다.")
+                logger.info(f"🔍 {rank}등 배출점 조회 결과가 없습니다.")
                 continue
             name = columns[1].text
             category = columns[2].text if include_category else None
@@ -90,7 +90,7 @@ def crawl_table(driver, data, drwNo, rank, xpath, include_category=False):
                 store_data["category"] = category
             data["lotto_stores"].append(store_data)
     except (NoSuchElementException, TimeoutException):
-        logger.error(f"{rank}등 배출점 테이블이 존재하지 않거나 로딩 시간이 초과되었습니다.")
+        logger.error(f"❌ {rank}등 배출점 테이블이 존재하지 않거나 로딩 시간이 초과되었습니다.")
 
 # 마지막 페이지 번호 추정 함수
 def estimate_last_page_number(driver):
@@ -113,7 +113,7 @@ def estimate_last_page_number(driver):
 def crawl_second_tier_stores(driver, data, drwNo):
     page_number = 2
     max_page_number = estimate_last_page_number(driver)
-    logger.info(f"Total pages to crawl for 2등: {max_page_number}")
+    logger.info(f"📝 2등 배출점 크롤링할 총 페이지 수: {max_page_number}")
     while page_number <= max_page_number:
         try:
             page_link = driver.find_element(By.XPATH, f"//div[@class='paginate_common']//a[contains(@onclick, 'selfSubmit({page_number})')]")
@@ -122,16 +122,17 @@ def crawl_second_tier_stores(driver, data, drwNo):
             crawl_table(driver, data, drwNo, "2", "//div[@class='group_content'][2]//table")
             page_number += 1
         except (NoSuchElementException, TimeoutException):
-            logger.error(f"페이지 {page_number}가 존재하지 않거나 로딩 시간이 초과되었습니다.")
+            logger.error(f"❌ 페이지 {page_number}가 존재하지 않거나 로딩 시간이 초과되었습니다.")
             break
 
+# 당첨 데이터 수집 함수
 def collect_all_winning_data():
     driver = initialize_driver()  # 드라이버 초기화 위치 이동
-    data = {"lotto_stores": []}  # 초기화 위치 변경
+    data = {"lotto_stores": []}  # 데이터 초기화
     try:
         for drwNo in drwNo_options:
             logger.info("=====================================================================")
-            logger.info(f"[회차 {drwNo} 크롤링 중...]")
+            logger.info(f"🎯 [회차 {drwNo} 크롤링 중...]")
             data["lotto_stores"] = []  # 각 회차마다 초기화
             drwNo_select = Select(driver.find_element(By.ID, 'drwNo'))
             drwNo_select.select_by_value(drwNo)
@@ -142,6 +143,7 @@ def collect_all_winning_data():
             crawl_second_tier_stores(driver, data, drwNo)
             for store_data in data["lotto_stores"]:
                 store_id = store_data["store_id"]
+                store_name = store_data["name"]
                 lotto_store = Session.query(LottoStore).filter_by(id=store_id).first()
                 if lotto_store:
                     winning_info = WinningInfo(
@@ -152,10 +154,10 @@ def collect_all_winning_data():
                     )
                     Session.add(winning_info)
                 else:
-                    logger.info(f"Skipping store_id {store_id} as it doesn't exist in LottoStores table.")
+                    logger.info(f"⏭️ {store_name} ({store_id})를 건너뜁니다. LottoStores 테이블에 존재하지 않습니다.")
             Session.commit()
     except Exception as e:
-        logger.error(f"An error occurred during data collection: {str(e)}")
+        logger.error(f"❌ 데이터 수집 중 오류 발생: {str(e)}")
     finally:
         driver.quit()  # 드라이버 종료
         Session.remove()

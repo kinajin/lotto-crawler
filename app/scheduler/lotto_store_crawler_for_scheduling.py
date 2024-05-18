@@ -49,7 +49,7 @@ def get_page_number(sido, gugun=''):
         if json_data['arr']:
             return json_data.get('totalPage')
     except (requests.exceptions.RequestException, ValueError, KeyError) as e:
-        logger.error(f"Failed to get {sido} totalPage: {str(e)}")
+        logger.error(f"❌ {sido}의 총 페이지 수를 가져오는 데 실패했습니다: {str(e)}")
         return None
 
 # 데이터 가져오기 함수
@@ -62,6 +62,7 @@ def fetch_data(sido, gugun='', page=1, all_store_data=None):
         'sltGUGUN2': gugun,
         'rtlrSttus': '001'
     }
+    
     try:
         # 데이터 수집
         response = requests.post(url, data=data, headers=headers, timeout=10)
@@ -69,7 +70,7 @@ def fetch_data(sido, gugun='', page=1, all_store_data=None):
         json_data = response.json()
         all_store_data.extend(json_data['arr'])  # all_store_data에 데이터 추가
     except (requests.exceptions.RequestException, ValueError, KeyError) as e:
-        logger.error(f"Failed to get {sido} data: {str(e)}")
+        logger.error(f"❌ {sido}의 데이터를 가져오는 데 실패했습니다: {str(e)}")
 
 # 전체 판매점 ID 가져오기 함수
 def get_all_store_ids(all_store_data):
@@ -87,19 +88,21 @@ def get_inactive_store_ids(existing_store_ids, all_store_ids):
 # 폐점한 판매점의 당첨 정보 삭제 함수
 def delete_winning_info(inactive_store_ids):
     for store_id in inactive_store_ids:
+        store_name = Session.query(LottoStore.name).filter_by(id=store_id).first()[0]
         Session.query(WinningInfo).filter_by(store_id=store_id).delete()
-        logger.info(f"Deleted winning info for store: {store_id}")
+        logger.info(f"🗑️ 폐점한 판매점 {store_name} ({store_id})의 로또 당첨 정보를 삭제했습니다.")
     Session.commit()
 
 # 폐점한 판매점 정보 삭제 함수
 def delete_inactive_stores(inactive_store_ids):
     if inactive_store_ids:
-        Session.query(LottoStore).filter(LottoStore.id.in_(inactive_store_ids)).delete(synchronize_session=False)
-        logger.info(f"Deleted inactive stores: {inactive_store_ids}")
-        logger.info(f"Deleted inactive stores names: {Session.query(LottoStore.name).filter(LottoStore.id.in_(inactive_store_ids)).all()}")
+        for store_id in inactive_store_ids:
+            store_name = Session.query(LottoStore.name).filter_by(id=store_id).first()[0]
+            Session.query(LottoStore).filter_by(id=store_id).delete()
+            logger.info(f"🗑️ 폐점한 판매점 {store_name} ({store_id})를 삭제하였습니다.")
         Session.commit()
     else:
-        logger.info("There are no inactive stores, 새로 폐점한 판매점이 존재하지 않습니다.")
+        logger.info("🔍 새로 폐점한 판매점이 존재하지 않습니다.")
 
 # HTML 엔티티를 처리하는 함수
 def decode_html_entities(text):
@@ -121,17 +124,17 @@ def update_store_info(store_data):
         address = decode_html_entities(store_data.get('BPLCDORODTLADRES'))
         
         if lotto_store.name != firm_name:
-            logger.info(f"Store name changed from {lotto_store.name} to {firm_name}")
+            logger.info(f"🏷️ 로또판매점 이름이 {lotto_store.name}에서 {firm_name}으로 변경되었습니다.")
             lotto_store.name = firm_name
             updated_fields.append('name')
         
         if lotto_store.address != address:
-            logger.info(f"Store address changed from {lotto_store.address} to {address}")
+            logger.info(f"🏷️ 로또판매점 {lotto_store.name} 의 주소가 {lotto_store.address}에서 {address}으로 변경되었습니다.")
             lotto_store.address = address
             updated_fields.append('address')
         
         if lotto_store.phone != store_data['RTLRSTRTELNO']:
-            logger.info(f"Store phone number changed from {lotto_store.phone} to {store_data['RTLRSTRTELNO']}")
+            logger.info(f"📞 로또판매점 {lotto_store.name}의 전화번호가 {lotto_store.phone}에서 {store_data['RTLRSTRTELNO']}으로 변경되었습니다.")
             lotto_store.phone = store_data['RTLRSTRTELNO']
             updated_fields.append('phone')
         
@@ -139,27 +142,30 @@ def update_store_info(store_data):
             lotto_store_lat = float(lotto_store.lat)
             store_data_lat = float(store_data['LATITUDE'])
             if lotto_store_lat != store_data_lat:
-                logger.info(f"Store latitude changed from {lotto_store_lat} to {store_data_lat}")
+                logger.info(f"🌐 로또판매점 {lotto_store.name}의 위도가 {lotto_store_lat}에서 {store_data_lat}으로 변경되었습니다.")
                 lotto_store.lat = store_data_lat
                 updated_fields.append('lat')
         except (ValueError, TypeError):
-            logger.error(f"Error converting LATITUDE to float for store {store_id}")
+            logger.error(f"❌ 로또판매점 {lotto_store.name}의 {store_id}의 위도를 float로 변환하는 데 오류가 발생했습니다.")
         
         try:
             lotto_store_lon = float(lotto_store.lon)
             store_data_lon = float(store_data['LONGITUDE'])
             if lotto_store_lon != store_data_lon:
-                logger.info(f"Store longitude changed from {lotto_store_lon} to {store_data_lon}")
+                logger.info(f"🌐 로또판매점 {lotto_store.name}의 경도가 {lotto_store_lon}에서 {store_data_lon}으로 변경되었습니다.")
                 lotto_store.lon = store_data_lon
                 updated_fields.append('lon')
         except (ValueError, TypeError):
-            logger.error(f"Error converting LONGITUDE to float for store {store_id}")
+            logger.error(f"❌ 로또판매점 {lotto_store.name}의 {store_id}의 경도를 float로 변환하는 데 오류가 발생했습니다.")
         
         if updated_fields:
-            logger.info(f"Updated store info for store {store_id}: {', '.join(updated_fields)}")
             Session.commit()
     
     else:
+        # 여기서 firm_name과 address를 미리 정의합니다.
+        firm_name = decode_html_entities(store_data.get('FIRMNM', ''))
+        address = decode_html_entities(store_data.get('BPLCDORODTLADRES', ''))
+
         try:
             lotto_store = LottoStore(
                 id=store_id,
@@ -169,11 +175,11 @@ def update_store_info(store_data):
                 lat=float(store_data['LATITUDE']),
                 lon=float(store_data['LONGITUDE']),
             )
-            logger.info(f"Added new store: {store_id}")
+            logger.info(f"🆕 새로운 판매점 추가: id: {store_id}, 이름: {firm_name}, 주소: {address}, 전화번호: {store_data['RTLRSTRTELNO']}, 위도: {store_data['LATITUDE']}, 경도: {store_data['LONGITUDE']}")
             Session.add(lotto_store)
             Session.commit()
         except (ValueError, TypeError):
-            logger.error(f"Error creating new store {store_id} due to invalid LATITUDE or LONGITUDE")
+            logger.error(f"❌ 유효하지 않은 위도 또는 경도로 인해 판매점 {firm_name}({store_id})을 생성하는 데 오류가 발생했습니다.")
 
 # 전체 판매점 데이터 수집 함수
 def collect_all_lotto_stores():
@@ -186,8 +192,7 @@ def collect_all_lotto_stores():
                 for page in range(1, total_page + 1):
                     # 데이터 수집
                     fetch_data(sido, page=page, all_store_data=all_store_data)  
-                    # logger.info(f"Data collection in progress: {sido} - page {page}")
-            logger.info(f"Total data collected: {len(all_store_data)} for {sido}")
+            logger.info(f"📊 {sido}에서 수집된 총 로또 판매점 수: {len(all_store_data)}")
 
         # 전체 판매점 ID 가져오기
         all_store_ids = get_all_store_ids(all_store_data)
@@ -204,14 +209,13 @@ def collect_all_lotto_stores():
         # 폐점한 판매점 정보 삭제
         delete_inactive_stores(inactive_store_ids)
 
+        # 판매점 정보 업데이트
         for store_data in all_store_data:
             update_store_info(store_data)
-
-        logger.info("Lotto store data collection completed.")
         return all_store_data  # 수집된 데이터 반환
 
     except Exception as e:
-        logger.error(f"An error occurred during data collection: {str(e)}")
+        logger.error(f"❌ 데이터 수집 중 오류 발생: {str(e)}")
     finally:
         Session.remove()
 

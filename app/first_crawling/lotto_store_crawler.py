@@ -18,11 +18,7 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 }
 
-
-
-
-    # 지역별 페이지 수를 가져오는 함수
-
+# 지역별 크롤링할 페이지 수를 가져오는 함수
 def get_page_number(sido, gugun=''):
     url = "https://dhlottery.co.kr/store.do?method=sellerInfo645Result"
     data = {
@@ -43,13 +39,8 @@ def get_page_number(sido, gugun=''):
         return None
 
 
-
-
-
+# 판매점 데이터를 가져오는 함수
 def fetch_store_data(sido, gugun='', page=1):
-    """
-    판매점 데이터를 가져오는 함수
-    """
     url = "https://dhlottery.co.kr/store.do?method=sellerInfo645Result"
     data = {
         'searchType': 3,
@@ -70,7 +61,6 @@ def fetch_store_data(sido, gugun='', page=1):
 
 
 
-
 # 판매점 데이터를 데이터베이스에 저장하는 함수
 def save_store_data(store_data_list):
     lotto_stores = [LottoStore(
@@ -86,7 +76,7 @@ def save_store_data(store_data_list):
     Session.commit()
 
 
-#  판매점 데이터를 수집하는 함수
+# 판매점 데이터를 수집하는 함수
 def collect_store_data():
     for sido in sido_list:
         total_page = get_page_number(sido)
@@ -100,7 +90,7 @@ def collect_store_data():
 
 
 
-# 
+# 메인 함수
 def main():
     collect_store_data()
     Session.remove()
