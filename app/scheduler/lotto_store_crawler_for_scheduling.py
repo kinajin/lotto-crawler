@@ -52,8 +52,9 @@ def get_page_number(sido, gugun=''):
         logger.error(f"❌ {sido}의 총 페이지 수를 가져오는 데 실패했습니다: {str(e)}")
         return None
 
+
 # 데이터 가져오기 함수
-def fetch_data(sido, gugun='', page=1, all_store_data=None):
+def fetch_data(sido, gugun='', page=1, all_store_data=None, retries=3):
     url = "https://dhlottery.co.kr/store.do?method=sellerInfo645Result"
     data = {
         'searchType': 3,
@@ -63,14 +64,20 @@ def fetch_data(sido, gugun='', page=1, all_store_data=None):
         'rtlrSttus': '001'
     }
     
-    try:
-        # 데이터 수집
-        response = requests.post(url, data=data, headers=headers, timeout=10)
-        response.raise_for_status()
-        json_data = response.json()
-        all_store_data.extend(json_data['arr'])  # all_store_data에 데이터 추가
-    except (requests.exceptions.RequestException, ValueError, KeyError) as e:
-        logger.error(f"❌ {sido}의 데이터를 가져오는 데 실패했습니다: {str(e)}")
+    for attempt in range(retries):
+        try:
+            # 데이터 수집
+            response = requests.post(url, data=data, headers=headers, timeout=20)
+            response.raise_for_status()
+            json_data = response.json()
+            all_store_data.extend(json_data['arr'])  # all_store_data에 데이터 추가
+            return  # 성공하면 함수 종료
+        except (requests.exceptions.RequestException, ValueError, KeyError) as e:
+            if attempt < retries - 1:
+                logger.warning(f"⚠️ {sido}의 데이터를 가져오는 데 실패했습니다: {str(e)}. 재시도 중... ({attempt + 1}/{retries})")
+                time.sleep(2)  # 재시도하기 전에 잠시 대기
+            else:
+                logger.error(f"❌ {sido}의 데이터를 가져오는 데 실패했습니다: {str(e)}")
 
 # 전체 판매점 ID 가져오기 함수
 def get_all_store_ids(all_store_data):

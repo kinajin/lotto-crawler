@@ -53,7 +53,7 @@ def run_crawlers():
 
 
 # 특정 시간마다 크롤러 실행 예약
-schedule.every(60).minutes.do(run_crawlers)
+schedule.every(3).minutes.do(run_crawlers)
 
 
 # 로그 설정
