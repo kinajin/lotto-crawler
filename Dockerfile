@@ -11,8 +11,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-
-
 # Google Chrome 설치
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
@@ -20,11 +18,8 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
     && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
-
-# ChromeDriver 다운로드
+# ChromeDriver 다운로드 및 설치
 ADD https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.60/linux64/chromedriver-linux64.zip /tmp/chromedriver.zip
-
-# ChromeDriver 설치
 RUN unzip /tmp/chromedriver.zip -d /usr/local/bin/ \
     && mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/ \
     && rm -rf /tmp/chromedriver.zip /usr/local/bin/chromedriver-linux64 \
@@ -34,10 +29,14 @@ RUN unzip /tmp/chromedriver.zip -d /usr/local/bin/ \
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
+# .env 파일 복사
+COPY .env ./
+
 # 애플리케이션 코드 복사
 COPY app ./app
 
+# 환경 변수 설정
+ENV PYTHONPATH=/app
+
 # 크롤링 스케줄러 실행
-CMD ["python", "app/scheduler/lotto_crawling_scheduler.py"]
-
-
+CMD ["python", "app/scheduler.py"]

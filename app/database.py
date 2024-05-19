@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 
-load_dotenv("config/.env")
+load_dotenv(".env")
 
 
 # AWS RDS PostgreSQL 데이터베이스 연결

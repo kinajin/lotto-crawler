@@ -3,7 +3,8 @@
 import time
 from sqlalchemy.orm import scoped_session, sessionmaker
 from ..models import LottoStore, engine, WinningInfo
-from config.config import SIDO_LIST, logger
+from config.config import SIDO_LIST
+from config.logger import logger
 from utilities.utils import get_page_number, fetch_store_data, get_all_store_ids, get_existing_store_ids, get_inactive_store_ids, delete_winning_info, delete_inactive_stores, update_store_info, create_session
 
 Session = create_session(engine)
