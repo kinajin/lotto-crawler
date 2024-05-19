@@ -155,23 +155,7 @@ SQLALCHEMY_DATABASE_URL = "postgresql://username:password@host:port/database"
 
    ```
 
-3. 주기적인 로또 판매점 정보 업데이트를 위해 app/crawler/lotto_store_update_crawler.py를 실행합니다.
-
-   ```
-
-   python app/crawler/lotto_store_update_crawler.py
-
-   ```
-
-4. 주기적인 로또 당첨 정보 업데이트를 위해 app/crawler/lotto_winning_update_crawler.py를 실행합니다.
-
-   ```
-
-   python app/crawler/lotto_winning_update_crawler.py
-
-   ```
-
-5. 크롤링 작업을 스케줄링하려면 app/scheduler.py를 실행합니다.
+3. 주기적인 로또 판매점 정보 및 로또 당첨 정보 업데이트를 위해 스케줄링하려면 app/scheduler.py를 실행합니다.
 
    ```
 
