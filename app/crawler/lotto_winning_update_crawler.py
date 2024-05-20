@@ -66,7 +66,7 @@ def update_all_winning_data():
         refresh_materialized_view(engine)
         
     except Exception as e:
-        logger.error(f"❌ 데이터 수집 중 오류 발생: {str(e)}")
+        logger.error(f"❌!데이터 수집 중 오류 발생: {str(e)}")
     finally:
         driver.quit()
         Session.remove()

@@ -127,10 +127,15 @@ def get_inactive_store_ids(existing_store_ids, all_store_ids):
 # 폐점한 판매점의 당첨 정보 삭제 함수
 def delete_winning_info(Session, WinningInfo, inactive_store_ids):
     for store_id in inactive_store_ids:
-        store_name = Session.query(WinningInfo.store_name).filter_by(id=store_id).first()[0]
-        Session.query(WinningInfo).filter_by(store_id=store_id).delete()
-        logger.info(f"🗑️ 폐점한 판매점 {store_name} ({store_id})의 로또 당첨 정보를 삭제했습니다.")
+        # LottoStore 모델에서 store_id를 사용하여 store_name을 가져옵니다.
+        store = Session.query(LottoStore).filter_by(id=store_id).first()
+        if store:
+            store_name = store.name
+            # WinningInfo에서 store_id를 사용하여 해당 당첨 정보를 삭제합니다.
+            Session.query(WinningInfo).filter_by(store_id=store_id).delete()
+            logger.info(f"🗑️ 폐점한 판매점 {store_name} ({store_id})의 로또 당첨 정보를 삭제했습니다.")
     Session.commit()
+
 
 
 # 데이터베이스에 당첨정보 저장 함수
