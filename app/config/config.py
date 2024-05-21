@@ -6,8 +6,6 @@ SIDO_LIST = [
     '충북', '충남', '광주', '전북', '전남', '경북', '경남', '제주', '세종'
 ]
 
-
-
 # 헤더 설정
 HEADERS = {
     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',

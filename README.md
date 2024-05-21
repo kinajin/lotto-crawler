@@ -201,8 +201,8 @@ SQLALCHEMY_DATABASE_URL = "postgresql://username:password@host:port/database"
 
 ## 👨‍💻 작성자 정보
 
+이름: KinaJin
 이메일: kinajin22@gmail.com
-GitHub: https://github.com/kinajin/
 
 ## 📄 라이센스
 
